@@ -99,6 +99,7 @@ async def sum_numbers(numbers: SummationInput):
     try:
         # Calculate result
         result = sum(numbers.numbers)
+        input = numbers.numbers
         
         global job_id
         
@@ -109,7 +110,7 @@ async def sum_numbers(numbers: SummationInput):
         # Schedule delayed write to mailbox
         async def delayed_write():
             await asyncio.sleep(3)  # 3 second delay
-            write_to_mailbox(current_job_id, "summation", List[numbers], result)
+            write_to_mailbox(current_job_id, "summation", input, result)
             print(f"Summation done. Result: {result}")
             
         # Start the delayed write task
