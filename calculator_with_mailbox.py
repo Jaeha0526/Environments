@@ -77,7 +77,7 @@ async def multiply(numbers: MultiplicationInput):
         # Return immediately with job_id
         return {
             "status": "success",
-            "message": f"Multiplication scheduled. Result will be available in mailbox index {current_job_id}.",
+            "message": f"Multiplication scheduled. Result will be available in mailbox index {current_job_id} after 3 seconds.",
             "mailbox_index": current_job_id
         }
     except ValueError as e:
@@ -109,7 +109,7 @@ async def sum_numbers(numbers: SummationInput):
         # Schedule delayed write to mailbox
         async def delayed_write():
             await asyncio.sleep(3)  # 3 second delay
-            write_to_mailbox(current_job_id, "summation", List[input], result)
+            write_to_mailbox(current_job_id, "summation", List[numbers], result)
             print(f"Summation done. Result: {result}")
             
         # Start the delayed write task
@@ -118,7 +118,7 @@ async def sum_numbers(numbers: SummationInput):
         # Return immediately with job_id
         return {
             "status": "success",
-            "message": f"Summation scheduled. Result will be available in mailbox index {current_job_id}.",
+            "message": f"Summation scheduled. Result will be available in mailbox index {current_job_id} after 3 seconds.",
             "mailbox_index": current_job_id
         }
     except Exception as e:
