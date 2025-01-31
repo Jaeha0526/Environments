@@ -67,7 +67,7 @@ async def multiply(numbers: MultiplicationInput):
         
         # Schedule delayed write to mailbox
         async def delayed_write():
-            await asyncio.sleep(3)  # 3 second delay
+            await asyncio.sleep(1)  # 1 second delay
             write_to_mailbox(current_job_id, "multiplication", input, result)
             print(f"Multiplication done. Result: {result}")
             
@@ -109,7 +109,7 @@ async def sum_numbers(numbers: SummationInput):
         
         # Schedule delayed write to mailbox
         async def delayed_write():
-            await asyncio.sleep(3)  # 3 second delay
+            await asyncio.sleep(1)  # 1 second delay
             write_to_mailbox(current_job_id, "summation", input, result)
             print(f"Summation done. Result: {result}")
             
@@ -143,7 +143,11 @@ async def get_mailbox_entry(index: int):
     try:
         entry = mailbox.get(str(index))
         if entry is None:
-            raise HTTPException(status_code=404, detail=f"No entry found at index {index}")
+            return {
+                "status": "error",
+                "entry": f"No entry found at index {index}"
+            }
+            # raise HTTPException(status_code=404, detail=f"No entry found at index {index}")
         return {
             "status": "success",
             "entry": entry
