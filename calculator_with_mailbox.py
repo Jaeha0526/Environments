@@ -159,4 +159,4 @@ async def get_mailbox_entry(index: int):
         }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=9019)
+    uvicorn.run(app, host="0.0.0.0", port=9012)
