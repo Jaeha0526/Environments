@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import subprocess
 import os
+import json
 
 app = FastAPI(title="VM Python Execution Environment")
 
@@ -36,14 +37,15 @@ def update_code(filename: str, request: CodeUpdateRequest):
 
 @app.post("/execute/{filename}")
 def execute_code(filename: str, request: ExecutionRequest):
-    """Execute a script with input and return the output"""
+    """Execute a script with input and capture the return value"""
     filepath = os.path.join(CODE_DIR, filename)
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not found")
     
     try:
-        result = subprocess.run(["python", filepath], input=str(request.input_value), capture_output=True, text=True, timeout=5)
-        return {"stdout": result.stdout, "stderr": result.stderr}
+        result = subprocess.run(["python", "-c", f"import {filename[:-3]}; print(json.dumps({filename[:-3]}.factorial({request.input_value})))"], capture_output=True, text=True, timeout=5)
+        return_value = json.loads(result.stdout.strip()) if result.stdout.strip() else None
+        return {"return_value": return_value, "stderr": result.stderr.strip()}
     except subprocess.TimeoutExpired:
         return {"error": "Execution timed out"}
     except Exception as e:
@@ -76,4 +78,4 @@ def execute_test():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9019)
+    uvicorn.run(app, host="0.0.0.0", port=9018)
