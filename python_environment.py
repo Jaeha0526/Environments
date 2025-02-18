@@ -21,6 +21,7 @@ class ExecutionRequest(BaseModel):
 @app.get("/files/{filename}")
 def get_code(filename: str):
     """Fetch the current code from the repository"""
+    print("get_code detected")
     filepath = os.path.join(CODE_DIR, filename)
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not found")
@@ -29,6 +30,7 @@ def get_code(filename: str):
 
 @app.put("/files/{filename}")
 def update_code(filename: str, request: CodeUpdateRequest):
+    print("update_code detected")
     """Update the Python script in the repository"""
     filepath = os.path.join(CODE_DIR, filename)
     with open(filepath, "w") as f:
@@ -38,6 +40,7 @@ def update_code(filename: str, request: CodeUpdateRequest):
 @app.post("/execute/{filename}")
 def execute_code(filename: str, request: ExecutionRequest):
     """Execute a script with input and capture the return value"""
+    print("execute_code detected")
     filepath = os.path.join(CODE_DIR, filename)
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not found")
@@ -54,6 +57,7 @@ def execute_code(filename: str, request: ExecutionRequest):
 @app.post("/execute_test")
 def execute_test():
     """Execute the predefined test script and return detailed results"""
+    print("execute_test detected")
     if not os.path.exists(TEST_FILE):
         raise HTTPException(status_code=404, detail="Test file not found")
     
