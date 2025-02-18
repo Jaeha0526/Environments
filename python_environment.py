@@ -14,6 +14,9 @@ os.makedirs(os.path.dirname(TEST_FILE), exist_ok=True)
 class CodeUpdateRequest(BaseModel):
     code: str
 
+class ExecutionRequest(BaseModel):
+    input_value: int
+
 @app.get("/files/{filename}")
 def get_code(filename: str):
     """Fetch the current code from the repository"""
@@ -32,14 +35,14 @@ def update_code(filename: str, request: CodeUpdateRequest):
     return {"message": "Code updated successfully", "filename": filename}
 
 @app.post("/execute/{filename}")
-def execute_code(filename: str):
-    """Execute a script and return the output"""
+def execute_code(filename: str, request: ExecutionRequest):
+    """Execute a script with input and return the output"""
     filepath = os.path.join(CODE_DIR, filename)
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not found")
     
     try:
-        result = subprocess.run(["python", filepath], capture_output=True, text=True, timeout=5)
+        result = subprocess.run(["python", filepath], input=str(request.input_value), capture_output=True, text=True, timeout=5)
         return {"stdout": result.stdout, "stderr": result.stderr}
     except subprocess.TimeoutExpired:
         return {"error": "Execution timed out"}
@@ -73,4 +76,4 @@ def execute_test():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9022)
+    uvicorn.run(app, host="0.0.0.0", port=9019)
