@@ -3,12 +3,13 @@ from pydantic import BaseModel
 import subprocess
 import os
 import json
+import sys
 
 app = FastAPI(title="VM Python Execution Environment")
 
 # Directory for storing Python scripts
-CODE_DIR = "./code_repository"
-TEST_FILE = "./code_repository/test_factorial.py"
+CODE_DIR = "./test_repository"
+TEST_FILE = "./test_repository/test_factorial.py"
 os.makedirs(CODE_DIR, exist_ok=True)
 os.makedirs(os.path.dirname(TEST_FILE), exist_ok=True)
 
@@ -21,7 +22,6 @@ class ExecutionRequest(BaseModel):
 @app.get("/files/{filename}")
 def get_code(filename: str):
     """Fetch the current code from the repository"""
-    print("get_code detected")
     filepath = os.path.join(CODE_DIR, filename)
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not found")
@@ -30,7 +30,6 @@ def get_code(filename: str):
 
 @app.put("/files/{filename}")
 def update_code(filename: str, request: CodeUpdateRequest):
-    print("update_code detected")
     """Update the Python script in the repository"""
     filepath = os.path.join(CODE_DIR, filename)
     with open(filepath, "w") as f:
@@ -45,8 +44,13 @@ def execute_code(filename: str, request: ExecutionRequest):
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not found")
     
+    sys.path.insert(0, CODE_DIR)  # Ensure Python looks in the correct directory
+    module_name = filename[:-3]  # Remove .py extension
     try:
-        result = subprocess.run(["python", "-c", f"import {filename[:-3]}; print(json.dumps({filename[:-3]}.factorial({request.input_value})))"], capture_output=True, text=True, timeout=5)
+        result = subprocess.run([
+            "python", "-c",
+            f"import sys; sys.path.insert(0, '{CODE_DIR}'); import {module_name}; print(json.dumps({module_name}.factorial({request.input_value})))"
+        ], capture_output=True, text=True, timeout=5)
         return_value = json.loads(result.stdout.strip()) if result.stdout.strip() else None
         return {"return_value": return_value, "stderr": result.stderr.strip()}
     except subprocess.TimeoutExpired:
@@ -57,7 +61,6 @@ def execute_code(filename: str, request: ExecutionRequest):
 @app.post("/execute_test")
 def execute_test():
     """Execute the predefined test script and return detailed results"""
-    print("execute_test detected")
     if not os.path.exists(TEST_FILE):
         raise HTTPException(status_code=404, detail="Test file not found")
     
@@ -82,4 +85,4 @@ def execute_test():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9007)
+    uvicorn.run(app, host="0.0.0.0", port=9009)
