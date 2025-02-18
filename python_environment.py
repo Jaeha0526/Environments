@@ -8,8 +8,8 @@ import sys
 app = FastAPI(title="VM Python Execution Environment")
 
 # Directory for storing Python scripts
-CODE_DIR = "./test_repository"
-TEST_FILE = "./test_repository/test_factorial.py"
+CODE_DIR = "./code_repository"
+TEST_FILE = "./code_repository/test_factorial.py"
 os.makedirs(CODE_DIR, exist_ok=True)
 os.makedirs(os.path.dirname(TEST_FILE), exist_ok=True)
 
@@ -85,4 +85,4 @@ def execute_test():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9009)
+    uvicorn.run(app, host="0.0.0.0", port=9111)
