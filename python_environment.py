@@ -7,7 +7,9 @@ app = FastAPI(title="VM Python Execution Environment")
 
 # Directory for storing Python scripts
 CODE_DIR = "./code_repository"
+TEST_FILE = "./code_repository/test_factorial.py"
 os.makedirs(CODE_DIR, exist_ok=True)
+os.makedirs(os.path.dirname(TEST_FILE), exist_ok=True)
 
 class CodeUpdateRequest(BaseModel):
     code: str
@@ -44,6 +46,31 @@ def execute_code(filename: str):
     except Exception as e:
         return {"error": str(e)}
 
+@app.post("/execute_test")
+def execute_test():
+    """Execute the predefined test script and return detailed results"""
+    if not os.path.exists(TEST_FILE):
+        raise HTTPException(status_code=404, detail="Test file not found")
+    
+    try:
+        result = subprocess.run(["python", TEST_FILE], capture_output=True, text=True, timeout=5)
+        output = result.stdout.strip()
+        error = result.stderr.strip()
+
+        if error:
+            return {"error": error}
+        
+        failures = []
+        for line in output.split("\n"):
+            if "FAILED" in line:
+                failures.append(line)
+        
+        return {"stdout": output, "failures": failures}
+    except subprocess.TimeoutExpired:
+        return {"error": "Execution timed out"}
+    except Exception as e:
+        return {"error": str(e)}
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9021)
+    uvicorn.run(app, host="0.0.0.0", port=9022)
