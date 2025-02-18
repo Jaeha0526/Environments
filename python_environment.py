@@ -49,7 +49,7 @@ def execute_code(filename: str, request: ExecutionRequest):
     try:
         result = subprocess.run([
             "python", "-c",
-            f"import sys; sys.path.insert(0, '{CODE_DIR}'); import {module_name}; print(json.dumps({module_name}.factorial({request.input_value})))"
+            f"import sys, json; sys.path.insert(0, '{CODE_DIR}'); import {module_name}; print(json.dumps({module_name}.factorial({request.input_value})))"
         ], capture_output=True, text=True, timeout=5)
         return_value = json.loads(result.stdout.strip()) if result.stdout.strip() else None
         return {"return_value": return_value, "stderr": result.stderr.strip()}
@@ -85,4 +85,4 @@ def execute_test():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9111)
+    uvicorn.run(app, host="0.0.0.0", port=9119)
